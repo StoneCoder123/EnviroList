@@ -18,14 +18,30 @@ const operations = [
 ];
 
 const Gliderops = [
-  [-1,-1],
+  [[-1,-1],
   [0,-1],
   [1,-1],
   [1,0],
-  [0,1]
+  [0,1]],
+  [[-1, -1],
+  [-1, 0],
+  [-1,1],
+  [0,1],
+  [1,0]],
+  [[-1,1],
+  [0,1],
+  [1,1],
+  [1,0],
+  [0,-1]],
+  [[1,1],
+  [1,0],
+  [1,-1],
+  [0,-1],
+  [-1,0]]
+  
 ];
 
-const generateEmpty = ()=>{
+const generateEmptyGrid = ()=>{
   const rows = [];
     for(let i = 0; i<numRows; i++)
     {
@@ -38,11 +54,12 @@ const generateEmpty = ()=>{
 
 function App() {
   const [grid, SetGrid] = useState(() => {
-    return generateEmpty();
+    return generateEmptyGrid();
   } );
 
   const [running, setRunning] = useState(false);
   const [state, setState] = useState(0);
+  const [orientation, setOrientation] = useState(0);
   console.log(`state: ${state}`);
   
 
@@ -80,6 +97,22 @@ function App() {
     setTimeout(runSim, 100);
   }, []);
 
+  document.addEventListener('keydown', (event) => {
+		if(event.key === 'r')
+    {
+      if(orientation < 3)
+      {
+        setOrientation(orientation + 1);
+      }
+      else
+      {
+        setOrientation(0);
+      }
+
+    }
+  });
+
+
 
   return (
     <>
@@ -99,7 +132,7 @@ function App() {
         onClick={()=>
         {
           SetGrid(g => {
-            return generateEmpty();
+            return generateEmptyGrid();
           })
         }}>
         Clear
@@ -125,6 +158,7 @@ function App() {
         else
         {
           setState(1);
+          setOrientation(0);
         }
       }}> Glider </button>
       <div style={{
@@ -155,10 +189,14 @@ function App() {
               else if(state === 1)
               {
                 const newGrid = produce(grid, gridCopy => {
-                  Gliderops.forEach(([x,y]) => {
+                  Gliderops[orientation].forEach(([x,y]) => {
                     const I = i + x;
                     const J = j + y;
-                    gridCopy[I][J] = 1;
+                    if(I >= 0 && J >= 0 && I < numRows && J < numCols)
+                    {
+                      gridCopy[I][J] = 1;
+                    }
+                    
                     
                   });
                 });
@@ -167,19 +205,36 @@ function App() {
             }}
 
             onMouseOver={()=>{
+
+              if(state == 0)
+              {
+                const divs = []
+                divs.push(document.getElementById(`${i} - ${j}`))
+
+                divs.forEach(element => {
+                  if(element.style.backgroundColor != "black")
+                  {
+                  element.style.backgroundColor = "gray";
+
+                  }
+                  
+                });
+
+              }
+
               if(state === 1)
               {
                 const divs = [];
                 
 
-                Gliderops.forEach(([x,y]) => {
-                  const I = i+x;
-                  const J = j+y;
-                  if(!(I >= 0 && J >= 0 && I < numRows && J < numCols))
+                Gliderops[orientation].forEach(([x,y]) => {
+                  const Inew = i+x;
+                  const Jnew = j+y;
+                  if(!(Inew >= 0 && Jnew >= 0 && Inew < numRows && Jnew < numCols))
                   {
                     return;
                   }
-                  divs.push(document.getElementById(`${I} - ${J}`));
+                  divs.push(document.getElementById(`${Inew} - ${Jnew}`));
                 });
 
                 divs.forEach(element => {
@@ -192,12 +247,29 @@ function App() {
             }}
 
             onMouseLeave={()=>{
+
+              if(state == 0)
+              {
+                const divs = []
+                divs.push(document.getElementById(`${i} - ${j}`))
+
+                divs.forEach(element => {
+                  if(element.style.backgroundColor != "black")
+                  {
+                  element.style.backgroundColor = "white";
+
+                  }
+                  
+                });
+
+              }
+
               if(state === 1)
               {
                 const divs = [];
                 
 
-                Gliderops.forEach(([x,y]) => {
+                Gliderops[orientation].forEach(([x,y]) => {
                   const I = i+x;
                   const J = j+y;
                   if(!(I >= 0 && J >= 0 && I < numRows && J < numCols))
@@ -230,6 +302,10 @@ function App() {
       </div>
     </>
   );
+}
+
+export default App;
+
 }
 
 export default App;
